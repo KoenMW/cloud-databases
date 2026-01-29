@@ -1,0 +1,39 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  c-sharp-api:
+    build: 
+      context: ./CSharpApi
+      dockerfile: Dockerfile
+    container_name: c-sharp-api
+    ports:
+      - "5070:8080"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+      QUEUE_NAME: "mortgage"
+  azure-functions:
+    build: 
+      context: ./AzureFunctions
+      dockerfile: Dockerfile
+    container_name: azure-functions
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+      QUEUE_NAME: "mortgage"
