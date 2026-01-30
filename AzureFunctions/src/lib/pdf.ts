@@ -18,7 +18,7 @@ export const createMortgagePdf = async (mail: EmailList): Promise<Buffer> => {
     doc.fontSize(14).text(`Loan Amount: $${mail.loan_amount.toFixed(2)}`);
     doc.moveDown();
 
-    doc.text(`Status: ${mail.accepted ? "ACCEPTED ✅" : "REJECTED ❌"}`);
+    doc.text(`Status: ${mail.accepted ? "ACCEPTED" : "REJECTED"}`);
 
     doc.moveDown(2);
     doc

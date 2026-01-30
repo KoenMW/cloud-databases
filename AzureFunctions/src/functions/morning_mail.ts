@@ -15,7 +15,7 @@ const getUnsendMailList = async () => {
     const res = await client.query<EmailList>(
       `
       SELECT id, full_name, email, accepted, loan_amount FROM processed_mortgages
-      WHERE notifications_sent = FALSE AND accepted = TRUE;
+      WHERE notifications_sent = FALSE;
     `,
     );
 
@@ -49,7 +49,7 @@ export async function morning_mail(
       );
       const pdf = await createMortgagePdf(emailEntry);
       const pdfUrl = await uploadPdfAndGetSasUrl(
-        `mortgage_${emailEntry.full_name.toLowerCase().replace(/ /g, "_")}.pdf`,
+        `mortgage_${emailEntry.full_name.toLowerCase().replace(/ /g, "_")}_${emailEntry.id}.pdf`,
         pdf,
         60 * 24,
       );
@@ -68,6 +68,6 @@ export async function morning_mail(
 }
 
 app.timer("morning_mail", {
-  schedule: !!process.env.TESTING ? "0 */2 * * * *" : "0 0 7 * * *", // {second} {minute} {hour} {day} {month} {day of week}
+  schedule: !!process.env.TESTING ? "30 */2 * * * *" : "0 0 7 * * *", // {second} {minute} {hour} {day} {month} {day of week}
   handler: morning_mail,
 });
