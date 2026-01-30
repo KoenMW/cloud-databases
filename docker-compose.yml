@@ -40,7 +40,7 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+      RABBITMQ_HOST: "rabbitmq"
       QUEUE_NAME: "mortgage"
       POSTGRES_CONNECTION: "Host=postgres;Port=5432;Database=buy_my_house;Username=postgres;Password=example"
       AZURE_BLOB_CONNECTION: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:10000/devstoreaccount1;"

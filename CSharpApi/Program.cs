@@ -52,6 +52,7 @@ ctx.Database.EnsureCreated();
 IHouseRepository houseRepository = new HouseRepository(ctx);
 IHouseService houseService = new HouseService(houseRepository);
 IBlobService blobService = new BlobService();
+IRabbitMQService rabbitMQService = new RabbitMQService();
 
 app.MapPost("/houses", async (
     HttpRequest request,
@@ -198,5 +199,23 @@ app.MapDelete("/houses/{id}", (string id) =>
         return Results.BadRequest(new { error = ex.Message });
     }
 }).WithName("RemoveHouse");
+
+app.MapPost("/mortgage-offer", async (MortgageOffer offer) =>
+{
+    try
+    {
+        await rabbitMQService.SendMortgageAsync(offer);
+        return Results.Ok(new
+        {
+            message = "Mortgage offer received successfully, it will be processed at night",
+        });
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError("Error calculating mortgage offer");
+        app.Logger.LogError("Exception: {exception}", ex.ToString());
+        return Results.BadRequest(new { error = ex.Message });
+    }
+}).WithName("CalculateMortgageOffer");
 
 app.Run();
