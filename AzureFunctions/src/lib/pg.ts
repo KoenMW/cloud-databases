@@ -35,7 +35,7 @@ export const ensureTableExists = async () => {
         annual_income NUMERIC NOT NULL,
         loan_amount NUMERIC NOT NULL,
         loan_term_years INT NOT NULL,
-        accepted BOOLEAN NOT NULL,
+        accepted BOOLEAN NOT NULL DEFAULT FALSE,
         notifications_sent BOOLEAN DEFAULT FALSE
       );
     `);

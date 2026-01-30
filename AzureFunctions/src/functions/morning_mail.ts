@@ -43,7 +43,9 @@ export async function morning_mail(
   for (const emailEntry of emailList) {
     try {
       context.log(
-        `Sending morning mail to ${emailEntry.full_name} at ${emailEntry.email}`,
+        `Sending morning mail to ${emailEntry.full_name} at ${emailEntry.email} it was ${
+          emailEntry.accepted ? "ACCEPTED" : "REJECTED"
+        }`,
       );
       const pdf = await createMortgagePdf(emailEntry);
       const pdfUrl = await uploadPdfAndGetSasUrl(

@@ -3,13 +3,20 @@ import Connection, { ConsumerHandler } from "rabbitmq-client";
 import { ensureTableExists, getDbClient } from "../lib/pg";
 import { ProcessedMortgage } from "../lib/types";
 
-const recordProcessedMessage = async (message: string) => {
+const recordProcessedMessage = async (
+  message: string,
+  context: InvocationContext,
+) => {
   const client = await getDbClient();
   try {
     await ensureTableExists();
     const data: ProcessedMortgage = JSON.parse(message);
     data.processed_at = new Date();
-    data.accepted = Math.random() < 1 / 3;
+    data.accepted = Math.random() < 0.5;
+
+    context.log(
+      `Recording processed mortgage for ${data.FullName}, accepted: ${data.accepted}`,
+    );
     await client.query(
       `
       INSERT INTO processed_mortgages
@@ -67,32 +74,34 @@ const startupConsumer = async (
 const processQueueMessages = async (context: InvocationContext) => {
   const rabbit = await startupRabbitMQ(context);
   let processedCount = 0;
+  let lastMessageAt = Date.now();
 
   const cb: ConsumerHandler = async (msg) => {
+    lastMessageAt = Date.now();
     try {
-      context.log("Processing message:", msg.body.toString());
-      await recordProcessedMessage(msg.body.toString());
-    } catch (error) {
-      context.log("Error processing message:", error);
+      await recordProcessedMessage(msg.body.toString(), context);
+    } catch (err) {
+      context.log("Error processing message:", err);
     } finally {
       processedCount++;
     }
   };
 
-  const { consumer, messageCount } = await startupConsumer(context, rabbit, cb);
-
-  context.log("Consumer started, waiting for messages...");
+  const { consumer } = await startupConsumer(context, rabbit, cb);
 
   consumer.start();
+  context.log("Consumer started");
 
-  // Wait until all messages are processed
-  while (processedCount < messageCount) {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    context.log(`Processed ${processedCount} of ${messageCount} messages...`);
+  const IDLE_TIMEOUT_MS = 1000;
+
+  while (Date.now() - lastMessageAt < IDLE_TIMEOUT_MS) {
+    await new Promise((r) => setTimeout(r, 100));
   }
 
-  consumer.close();
-  context.log("All messages processed.");
+  await consumer.close();
+  await rabbit.close();
+
+  context.log(`Snapshot complete. Processed ${processedCount} messages.`);
 };
 
 export async function nigthly_batch(
