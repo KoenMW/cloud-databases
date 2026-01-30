@@ -1,24 +1,13 @@
 import { app, InvocationContext, Timer } from "@azure/functions";
 import Connection, { ConsumerHandler } from "rabbitmq-client";
 import { ensureTableExists, getDbClient } from "../lib/pg";
-
-type ProcessedMortage = {
-  id: number;
-  FullName: string;
-  Email: string;
-  Address: string;
-  processed_at: Date;
-  AnnualIncome: number;
-  LoanAmount: number;
-  LoanTermYears: number;
-  accepted: boolean;
-};
+import { ProcessedMortgage } from "../lib/types";
 
 const recordProcessedMessage = async (message: string) => {
   const client = await getDbClient();
   try {
     await ensureTableExists();
-    const data: ProcessedMortage = JSON.parse(message);
+    const data: ProcessedMortgage = JSON.parse(message);
     data.processed_at = new Date();
     data.accepted = Math.random() < 1 / 3;
     await client.query(
@@ -124,6 +113,6 @@ export async function nigthly_batch(
 }
 
 app.timer("nigthly_batch", {
-  schedule: "0 * * * * *", // {second} {minute} {hour} {day} {month} {day of week} // Every day at midnight: 0 0 0 * * *
+  schedule: !!process.env.TESTING ? "0 */2 * * * *" : "0 0 0 * * *", // {second} {minute} {hour} {day} {month} {day of week}
   handler: nigthly_batch,
 });

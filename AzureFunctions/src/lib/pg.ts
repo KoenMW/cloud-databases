@@ -17,7 +17,13 @@ export const getDbClient = async () => {
   return await pool.connect();
 };
 
+let tableEnsured = false;
+
 export const ensureTableExists = async () => {
+  if (tableEnsured) {
+    return;
+  }
+
   const client = await getDbClient();
   try {
     await client.query(`
@@ -33,6 +39,23 @@ export const ensureTableExists = async () => {
         notifications_sent BOOLEAN DEFAULT FALSE
       );
     `);
+  } finally {
+    client.release();
+  }
+  tableEnsured = true;
+};
+
+export const markNotificationsSent = async (id: number) => {
+  const client = await getDbClient();
+  try {
+    await client.query(
+      `
+      UPDATE processed_mortgages
+      SET notifications_sent = TRUE
+      WHERE id = $1 AND notifications_sent = FALSE;
+    `,
+      [id],
+    );
   } finally {
     client.release();
   }

@@ -63,6 +63,9 @@ services:
       PG_USER: "postgres"
       PG_PASSWORD: "example"
       PG_SSL: "false"
+      BLOB_ACCOUNT_NAME: "devstoreaccount1"
+      BLOB_ACCOUNT_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
+      BLOB_ENDPOINT: "http://host.docker.internal:10000/devstoreaccount1"
 volumes:
   pgdata:
     
