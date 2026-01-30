@@ -8,7 +8,6 @@ export async function morning_mail(
 }
 
 app.timer("morning_mail", {
-  schedule: "0 0 7 * * *",
+  schedule: "0 0 7 * * *", // {second} {minute} {hour} {day} {month} {day of week} // Every day at 7 AM: 0 0 7 * * *
   handler: morning_mail,
-  runOnStartup: true,
 });

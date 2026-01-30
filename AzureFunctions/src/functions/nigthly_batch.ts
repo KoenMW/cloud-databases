@@ -1,13 +1,53 @@
 import { app, InvocationContext, Timer } from "@azure/functions";
 import Connection, { ConsumerHandler } from "rabbitmq-client";
+import { ensureTableExists, getDbClient } from "../lib/pg";
+
+type ProcessedMortage = {
+  id: number;
+  FullName: string;
+  Email: string;
+  Address: string;
+  processed_at: Date;
+  AnnualIncome: number;
+  LoanAmount: number;
+  LoanTermYears: number;
+  accepted: boolean;
+};
+
+const recordProcessedMessage = async (message: string) => {
+  const client = await getDbClient();
+  try {
+    await ensureTableExists();
+    const data: ProcessedMortage = JSON.parse(message);
+    data.processed_at = new Date();
+    data.accepted = Math.random() < 1 / 3;
+    await client.query(
+      `
+      INSERT INTO processed_mortgages
+      (full_name, email, annual_income, loan_amount, loan_term_years, accepted)
+      VALUES ($1, $2, $3, $4, $5, $6);
+    `,
+      [
+        data.FullName,
+        data.Email,
+        data.AnnualIncome,
+        data.LoanAmount,
+        data.LoanTermYears,
+        data.accepted,
+      ],
+    );
+  } finally {
+    client.release();
+  }
+};
 
 const startupRabbitMQ = async (context: InvocationContext) => {
   const rabbit = new Connection("amqp://guest:guest@localhost:5672");
   rabbit.on("error", (err) => {
-    console.log("RabbitMQ connection error", err);
+    context.log("RabbitMQ connection error", err);
   });
   rabbit.on("connection", () => {
-    console.log("Connection successfully (re)established");
+    context.log("Connection successfully (re)established");
   });
 
   return rabbit;
@@ -42,7 +82,7 @@ const processQueueMessages = async (context: InvocationContext) => {
   const cb: ConsumerHandler = async (msg) => {
     try {
       context.log("Processing message:", msg.body.toString());
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await recordProcessedMessage(msg.body.toString());
     } catch (error) {
       context.log("Error processing message:", error);
     } finally {
@@ -86,5 +126,4 @@ export async function nigthly_batch(
 app.timer("nigthly_batch", {
   schedule: "0 * * * * *", // {second} {minute} {hour} {day} {month} {day of week} // Every day at midnight: 0 0 0 * * *
   handler: nigthly_batch,
-  runOnStartup: true,
 });

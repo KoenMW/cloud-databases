@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@azure/functions": "^4.0.0",
+    "@types/pg": "^8.16.0",
+    "pg": "^8.17.2",
     "rabbitmq-client": "^5.0.8"
   },
   "devDependencies": {
