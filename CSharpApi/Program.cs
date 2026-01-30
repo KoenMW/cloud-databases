@@ -16,6 +16,13 @@ builder.Logging.AddConsole();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
 
+string getUniqueFileName(string fileName)
+{
+    string ext = Path.GetExtension(fileName);
+    string name = Path.GetFileNameWithoutExtension(fileName);
+    return $"{name}_{DateTime.UtcNow:yyyyMMddHHmmssfff}{ext}";
+}
+
 
 WebApplication app = builder.Build();
 
@@ -68,7 +75,7 @@ app.MapPost("/houses", async (
             return Results.BadRequest(new { error = "House data is required." });
         }
 
-        house.ImageUrl = await blobService.UploadFileAsync(image.OpenReadStream(), image.FileName, image.ContentType);
+        house.ImageUrl = await blobService.UploadFileAsync(image.OpenReadStream(), getUniqueFileName(image.FileName), image.ContentType);
         houseService.CreateHouse(house);
 
         return Results.Created($"/houses/{house.Id}", house);
@@ -163,7 +170,7 @@ app.MapPut("/houses/{id}", async (
         house.Id = int.Parse(id);
         if (image != null)
         {
-            house.ImageUrl = await blobService.UploadFileAsync(image.OpenReadStream(), image.FileName, image.ContentType);
+            house.ImageUrl = await blobService.UploadFileAsync(image.OpenReadStream(), getUniqueFileName(image.FileName), image.ContentType);
         }
         houseService.ModifyHouse(house);
         return Results.Created($"/houses/{house.Id}", house);
