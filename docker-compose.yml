@@ -1,4 +1,20 @@
 services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: buy_my_house
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/cloud-databases/postgresql/data
   rabbitmq:
     image: rabbitmq:4-management
     container_name: rabbitmq
@@ -26,6 +42,8 @@ services:
     environment:
       RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
       QUEUE_NAME: "mortgage"
+      POSTGRES_CONNECTION: "Host=postgres;Port=5432;Database=buy_my_house;Username=postgres;Password=example"
+      AZURE_BLOB_CONNECTION: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:10000/devstoreaccount1;"
   azure-functions:
     build: 
       context: ./AzureFunctions
@@ -34,6 +52,12 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
     environment:
       RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
       QUEUE_NAME: "mortgage"
+      POSTGRES_CONNECTION: "Host=postgres;Port=5432;Database=buy_my_house;Username=postgres;Password=example"
+volumes:
+  pgdata:
+    
