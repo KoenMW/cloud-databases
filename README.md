@@ -47,11 +47,11 @@ A proof-of-concept property management system with a C# API for house listings a
 - .NET SDK (version 9.0 or later)
 - Azure Functions Core Tools
 - Azurite (for local Azure Storage emulation)
-- Docker (optional, for containerized setup)
+- Docker (for PostgreSQL and RabbitMQ containers)
 
 ### Getting Started
 
-#### Option 1: Local Development
+**Note:** Azure Functions must be run via the CLI, not Docker.
 
 1. **Start PostgreSQL and RabbitMQ** (using Docker):
 
@@ -74,28 +74,13 @@ A proof-of-concept property management system with a C# API for house listings a
    dotnet run
    ```
 
-4. **Start Azure Functions** (in a separate terminal):
+4. **Start Azure Functions** (in a separate terminal - using CLI only):
 
    ```bash
    cd AzureFunctions
    npm install
    npm start
    ```
-
-#### Option 2: Docker Compose
-
-Run all services together (except Azurite, which is for local development):
-
-```bash
-docker compose up
-```
-
-**Note**: Azurite still needs to be run separately for local development:
-
-```bash
-cd azurite
-azurite --skipApiVersionCheck
-```
 
 ## API Endpoints
 

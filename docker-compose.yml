@@ -44,28 +44,6 @@ services:
       QUEUE_NAME: "mortgage"
       POSTGRES_CONNECTION: "Host=postgres;Port=5432;Database=buy_my_house;Username=postgres;Password=example"
       AZURE_BLOB_CONNECTION: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:10000/devstoreaccount1;"
-  azure-functions:
-    build: 
-      context: ./AzureFunctions
-      dockerfile: Dockerfile
-    container_name: azure-functions
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-    environment:
-      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
-      QUEUE_NAME: "mortgage"
-      PG_HOST: "postgres"
-      PG_PORT: "5432"
-      PG_DATABASE: "buy_my_house"
-      PG_USER: "postgres"
-      PG_PASSWORD: "example"
-      PG_SSL: "false"
-      BLOB_ACCOUNT_NAME: "devstoreaccount1"
-      BLOB_ACCOUNT_KEY: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
-      BLOB_ENDPOINT: "http://host.docker.internal:10000/devstoreaccount1"
 volumes:
   pgdata:
     
