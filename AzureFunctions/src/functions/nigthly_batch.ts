@@ -41,7 +41,7 @@ const processQueueMessages = async (context: InvocationContext) => {
 
   const cb: ConsumerHandler = async (msg) => {
     try {
-      context.log("Processing message:", msg.toString());
+      context.log("Processing message:", msg.body.toString());
       await new Promise((resolve) => setTimeout(resolve, 500));
     } catch (error) {
       context.log("Error processing message:", error);
@@ -67,7 +67,7 @@ const processQueueMessages = async (context: InvocationContext) => {
 };
 
 export async function nigthly_batch(
-  myTimer: Timer,
+  _: Timer,
   context: InvocationContext,
 ): Promise<void> {
   context.log("Nightly batch function started at:", new Date().toISOString());
